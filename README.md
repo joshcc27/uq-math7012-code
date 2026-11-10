@@ -26,8 +26,8 @@ exactly (JAX 0.11.2, Equinox 0.13.8, Optax 0.2.8). Python 3.12.
 
 ## The results
 
-The saved runs are published separately as a results archive (about 73 MB):
-**DOI to be added**. Unzip it in the root of this repository, which creates
+The saved runs are published separately as a results archive (about 73 MB),
+[doi:10.5281/zenodo.24096153](https://doi.org/10.5281/zenodo.24096153). Unzip it in the root of this repository, which creates
 `results/`, or anywhere else with `PINN_MISSPEC_RESULTS` pointing at its
 `results/` folder. `ARCHIVE-README.md` inside it describes the contents, and
 `SHA256SUMS` lets you check them.

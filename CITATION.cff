@@ -6,9 +6,13 @@ authors:
   - family-names: Cox
     given-names: Joshua
 version: 1.0.0
-date-released: 2026-11-13
+date-released: 2026-11-10
 license: MIT
 repository-code: "https://github.com/joshcc27/uq-math7012-code"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24096153
+    description: "The results archive the code reads to reproduce the thesis"
 preferred-citation:
   type: thesis
   title: "System identification with physics-informed neural networks: a simulation study of parameter compensation under model misspecification"
