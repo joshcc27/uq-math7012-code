@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uq-math7012-code"
+version = "1.0.0"
+description = "Parameter compensation in inverse physics-informed neural networks under model misspecification."
+requires-python = ">=3.12"
+# Pinned to the versions that reproduce the archived results exactly. With other
+# versions, reruns agree with the archive to about 1e-4 relative, not bit for bit.
+dependencies = [
+    "jax[cpu]==0.11.2",
+    "equinox==0.13.8",
+    "optax==0.2.8",
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "pandas==3.0.6",
+    "matplotlib==3.11.2",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",  # ruff format handles line length
+    "E402",  # double precision must be enabled before the imports that create arrays
+    "B905",  # zip() stops at the shorter input on purpose
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pinn_misspec"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

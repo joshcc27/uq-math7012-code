@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the thesis it was written for."
+title: "uq-math7012-code"
+type: software
+authors:
+  - family-names: Cox
+    given-names: Joshua
+version: 1.0.0
+date-released: 2026-11-13
+license: MIT
+repository-code: "https://github.com/joshcc27/uq-math7012-code"
+preferred-citation:
+  type: thesis
+  title: "System identification with physics-informed neural networks: a simulation study of parameter compensation under model misspecification"
+  authors:
+    - family-names: Cox
+      given-names: Joshua
+  institution:
+    name: "The University of Queensland"
+  thesis-type: "MATH7012 thesis, Master of Financial Mathematics"
+  year: 2026
+  month: 11
