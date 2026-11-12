@@ -50,34 +50,34 @@ uv run python -m pinn_misspec.report diagnostic <name>
 
 | In the thesis | Command | Where in the output |
 |---|---|---|
-| Figures 1.1, 1.2, 4.1, 4.2 | `figures` | `falling-object*.pdf`, `osc-misspecification.pdf`, `advdiff-misspecification.pdf` |
-| Figures 6.1, B.2 | `figures` | `osc-w0-vs-weight.pdf`, `advdiff-diffusivity-vs-weight.pdf` |
-| Figures B.1, 6.2 | `figures` | `osc-relaxed.pdf`, `advdiff-relaxed.pdf` |
-| Figure 6.3 | `figures` | `position-both-models.pdf` |
+| Figures 1.2, 1.3, 3.1, 3.2 | `figures` | `falling-object*.pdf`, `osc-misspecification.pdf`, `advdiff-misspecification.pdf` |
+| Figures 6.1, C.2 | `figures` | `osc-w0-vs-weight.pdf`, `advdiff-diffusivity-vs-weight.pdf` |
+| Figures C.1, 6.3 | `figures` | `osc-relaxed.pdf`, `advdiff-relaxed.pdf` |
+| Figure 6.4 | `figures` | `position-both-models.pdf` |
 | Figures 6.2, 6.5 | `network-figures` | `osc-neural-state.pdf`, `advdiff-residual-field.pdf`; these need the networks saved by `dense-grid-2026-10-25` and `data-residual-structure-2026-10-25`, which the results archive does not include |
 | Tables 5.2, 5.3 | — | the constants of `oscillator/` and `advection_diffusion/` (`model.py`, `study.py`) |
 | Table 6.1 | `tables` | oscillator median frequency error by weight; its target columns from oscillator references by severity |
 | Section 6.2, the oscillator's positions | `tables` | oscillator median position, all runs |
 | Table 6.2 | `tables` | advection-diffusion diffusivity across all weights; its target columns from advection-diffusion references by severity |
-| Table 6.3 | `tables` | a selection from the blocks behind Tables B.3 and B.4 |
+| Table 6.3 | `tables` | a selection from the blocks behind Tables C.1 and C.3 |
 | Table 6.4 | `diagnostic dense-grid-2026-10-25` | the `position` column |
 | Table 6.5 | `diagnostic collocation-nested-2026-10-11` | the block headed Table 6.5 at the end |
 | Tables B.1, B.2 | `screens` | |
-| Table B.3 | `tables` | oscillator state error, gap and data loss |
-| Table B.4 | `tables` | advection-diffusion state error, gap, mass ratio |
-| Table B.5 | `tables` | oscillator Lambda = 100 budget check |
-| Sections 5.7 to 5.9, 6.1 to 6.9 and Appendix B | `numbers`, `checks`, and the diagnostics below | |
+| Table C.1 | `tables` | oscillator state error, gap and data loss |
+| Table C.2 | `tables` | oscillator Lambda = 100 budget check |
+| Table C.3 | `tables` | advection-diffusion state error, gap, mass ratio |
+| Sections 5.7 to 5.9, 6.1 to 6.9 and Appendices C and D | `numbers`, `checks`, and the diagnostics below | |
 
 | Diagnostic | Thesis |
 |---|---|
-| `collocation-residual-2026-10-08` | the residual between the collocation points and the velocity drift, Appendices B.5 and B.6 |
-| `collocation-density-2026-10-08` | the first density test, Appendix B.5 |
+| `collocation-residual-2026-10-08` | the residual between the collocation points and the velocity drift, Appendices D.3 and D.4 |
+| `collocation-density-2026-10-08` | the first density test, Appendix D.3 |
 | `collocation-nested-2026-10-11` | nested collocation, Section 6.8 and Table 6.5 |
 | `dense-grid-2026-10-25` | denser collocation over the full grid, Section 6.7 and Table 6.4 |
 | `budget-20000-2026-10-08` | the 20000-update controls and settling, Sections 6.1 and 6.4 |
-| `collocation-thinned-2026-10-11` | thinning the oscillator's collocation, Appendix B.4 |
-| `large-weight-budget-2026-10-25` | stronger oscillator weights, Appendix B.3 |
-| `relaxed-damping-noise-2026-10-15` | why the freed damping errs high, Appendix B.7 |
+| `collocation-thinned-2026-10-11` | thinning the oscillator's collocation, Appendix D.2 |
+| `large-weight-budget-2026-10-25` | stronger oscillator weights, Appendix D.1 |
+| `relaxed-damping-noise-2026-10-15` | why the freed damping errs high (no longer reported in the thesis) |
 
 ## Rerunning the studies
 
@@ -89,11 +89,11 @@ script skips what is recorded.
 | Script | Parts | Thesis |
 |---|---|---|
 | `oscillator_main.py` | `screen`, `main`, `budget`, `lambda100` | Sections 5.6 to 5.8, 6.2 and 6.3 |
-| `oscillator_checks.py` | `relaxed`, `damping-noise`, `large-weight` | Sections 5.8, 5.9 and 6.3, Appendices B.3 and B.7 |
-| `oscillator_thinned.py` | `thinned` | Section 6.9, Appendix B.4 |
+| `oscillator_checks.py` | `relaxed`, `damping-noise`, `large-weight` | Sections 5.8, 5.9 and 6.3, Appendix D.1 (`damping-noise` is no longer reported) |
+| `oscillator_thinned.py` | `thinned` | Section 6.9, Appendix D.2 |
 | `advdiff_main.py` | `screen`, `main`, `budget` | Sections 5.6 to 5.8, 6.4 and 6.5 |
 | `advdiff_checks.py` | `relaxed`, `controls-20000`, `supplementary`, `budget-20000` | Sections 5.8, 5.9, 6.4 and 6.5 |
-| `advdiff_collocation.py` | `residual`, `density`, `nested`, `full-grid` | Sections 6.6 to 6.8, Appendices B.5 and B.6 |
+| `advdiff_collocation.py` | `residual`, `density`, `nested`, `full-grid` | Sections 6.6 to 6.8, Appendices D.3 and D.4 |
 
 ```sh
 uv run python studies/oscillator_main.py --only main --workers 6

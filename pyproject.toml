@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "uq-math7012-code"
-version = "1.0.0"
+version = "1.1.0"
 description = "Parameter compensation in inverse physics-informed neural networks under model misspecification."
 requires-python = ">=3.12"
 # Pinned to the versions that reproduce the archived results exactly. With other
