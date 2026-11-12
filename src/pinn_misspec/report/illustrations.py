@@ -98,20 +98,46 @@ def falling_object(out):
 
     betas = np.linspace(0.0, 0.05, 101)
     targets = np.array([free_fall_targets(beta) for beta in betas])
-    fig, b = plt.subplots(figsize=rf.figure_size(0.56, 2.9))
-    b.axhline(G_FALL, color=MUTED, lw=0.9, ls=(0, (1, 2)), label=r"true $g$")
-    b.plot(betas, targets[:, 1], color=C3, ls="--", label=r"equation-fit target $g_{\mathrm{eq}}$")
-    b.plot(betas, targets[:, 0], color=C2, ls="-.", label=r"solution-fit target $g_{\mathrm{sol}}$")
-    # The drag of the falling-object figure; solid, since dotted means the truth.
+    fig, (a, b) = plt.subplots(1, 2, figsize=rf.figure_size(0.94, 2.9), sharey=True)
+
+    # (a) The equation-fit target is the mean of the downward acceleration at the
+    # collocation times, and the solution-fit target the constant acceleration of the
+    # parabola that best fits the heights.
+    acceleration = G_FALL - BETA_FALL * fall_speed(t, BETA_FALL) ** 2
+    a.plot(t, acceleration, color=C1, label=r"generating, $-\ddot h(t)$")
+    for ax in (a, b):
+        ax.axhline(G_FALL, color=MUTED, lw=0.9, ls=(0, (1, 2)), label=r"true $g$")
+    a.axhline(g_eq, color=C3, ls="--", label=r"equation-fit target $g_{\mathrm{eq}}$")
+    a.axhline(g_sol, color=C2, ls="-.", label=r"solution-fit target $g_{\mathrm{sol}}$")
+    a.set_xlabel(r"time $t$ (s)")
+    a.set_ylabel(r"downward acceleration (m/s$^2$)")
+    a.set_title(rf"(a) the fall with $\beta={BETA_FALL:g}$", loc="left")
+    a.set_xlim(0, T_FALL)
+    grid(a)
+
+    b.plot(betas, targets[:, 1], color=C3, ls="--")
+    b.plot(betas, targets[:, 0], color=C2, ls="-.")
+    # The drag of panel (a); solid, since dotted means the truth.
     b.axvline(BETA_FALL, color=MUTED, lw=0.6, alpha=0.7)
     b.set_xlabel(r"drag coefficient $\beta$ (1/m)")
-    b.set_ylabel(r"value of $g$ (m/s$^2$)")
+    b.set_title("(b) the targets as drag grows", loc="left")
     b.set_xlim(0, betas[-1])
+    b.set_ylim(0, 10.6)
     grid(b)
-    # The legend sits below the panel, because every corner holds a curve.
-    fig.legend(*b.get_legend_handles_labels(), loc="outside lower center", ncol=1, handlelength=2.2)
+    # One legend below both panels, which share their line styles.
+    fig.legend(
+        *a.get_legend_handles_labels(),
+        loc="outside lower center",
+        ncol=2,
+        handlelength=2.2,
+        columnspacing=1.0,
+    )
     fig.savefig(out / "falling-object-targets.pdf")
     plt.close(fig)
+    print(
+        f"[check] falling object, beta={BETA_FALL:g}: downward acceleration falls from "
+        f"{acceleration[0]:.2f} to {acceleration[-1]:.2f} m/s^2 over {T_FALL:g} s"
+    )
     print(
         f"[check] falling object, beta={BETA_FALL:g}: g_sol={g_sol:.4f} "
         f"({100 * (g_sol / G_FALL - 1):+.2f}%), g_eq={g_eq:.4f} "
@@ -121,6 +147,9 @@ def falling_object(out):
 
 OMEGA, GAMMA_TRUE, T_END = 2.0 * np.pi, 0.30, 3.0
 X0, V0 = 1.0, 0.0
+# The misspecified severities of the two main grids.
+OSC_SEVERITIES = (-0.75, -0.5, -0.25, 0.5, 1.0, 2.0)
+ADV_SEVERITIES = (0.1, 0.25, 0.5, 1.0)
 
 
 def osc(t, gamma, omega=OMEGA, x0=X0, v0=V0):
@@ -187,9 +216,11 @@ def oscillator(out):
     uproj = osc(t, gw, w_projected)
     unaive = osc(t, gw)
 
+    # As in the falling-object figure: the fitted imposed curve, here the solution-fit
+    # target, is dash-dotted, and the imposed curve at the true value grey dotted.
     a.plot(t, ut, color=C1, label="generating")
-    a.plot(t, uproj, color=C2, ls="--", label=r"imposed, fitted $\omega$")
-    a.plot(t, unaive, color=C3, ls=":", label=r"imposed, $\omega^{\dagger}$")
+    a.plot(t, uproj, color=C2, ls="-.", label=r"imposed, fitted $\omega$")
+    a.plot(t, unaive, color=MUTED, ls=":", label=r"imposed, $\omega^{\dagger}$")
     a.axhline(0, color=MUTED, lw=0.6)
     a.set_xlabel(r"$t$")
     a.set_ylabel(r"$u(t)$")
@@ -198,24 +229,50 @@ def oscillator(out):
     grid(a)
 
     # Frequency moves the phase but not the amplitude decay, which only damping sets.
-    b.plot(t, np.exp(-GAMMA_TRUE * t), color=C1, label=r"generating, $\gamma^{\dagger}$")
-    b.plot(t, np.exp(-gw * t), color=C2, ls="--", label=r"imposed, $\gamma_{s}$")
+    # Severity moves the imposed decay and leaves the generating one fixed, so every
+    # severity of the grid gets its own imposed curve, labelled at the right.
+    b.plot(t, np.exp(-GAMMA_TRUE * t), color=C1)
+    for k, s in enumerate(OSC_SEVERITIES):
+        gamma_s = GAMMA_TRUE * (1.0 + s)
+        b.plot(
+            t,
+            np.exp(-gamma_s * t),
+            color=C2,
+            ls="--",
+            lw=1.0,
+            label=r"imposed decay, $\gamma_{s}=\gamma^{\dagger}(1+s)$" if k == 0 else None,
+        )
+    for s in (0.0, *OSC_SEVERITIES):
+        b.text(
+            T_END * 1.02,
+            np.exp(-GAMMA_TRUE * (1.0 + s) * T_END),
+            f"${s:g}$",
+            va="center",
+            ha="left",
+            fontsize=7.5,
+            color=INK,
+            clip_on=False,
+        )
+    b.text(T_END * 1.02, 0.97, "$s$", va="center", ha="left", fontsize=7.5, color=INK)
     b.set_xlabel(r"$t$")
     b.set_ylabel(r"$e^{-\gamma t}$")
-    b.set_title("(b) amplitude decay", loc="left")
+    b.set_title("(b) amplitude decay at each severity", loc="left")
     b.set_xlim(0, T_END)
     b.set_ylim(0, 1.05)
     grid(b)
 
-    # Separate legends: the imposed decay in (b) belongs to both curves of (a).
-    for ax in (a, b):
-        ax.legend(
-            loc="upper center",
-            bbox_to_anchor=(0.5, -0.3),
-            ncol=2,
-            handlelength=2.2,
-            columnspacing=1.0,
-        )
+    # One legend for both panels: the generating curve is the same solid blue in each,
+    # and the imposed decay in (b) belongs to both imposed curves of (a).
+    handles, labels = a.get_legend_handles_labels()
+    decay_handles, decay_labels = b.get_legend_handles_labels()
+    fig.legend(
+        handles + decay_handles,
+        labels + decay_labels,
+        loc="outside lower center",
+        ncol=2,
+        handlelength=2.2,
+        columnspacing=1.6,
+    )
     fig.savefig(out / "osc-misspecification.pdf")
     plt.close(fig)
     print(
@@ -243,28 +300,53 @@ def advdiff(x, t, v=VEL, kap=KAPPA, kmax=64):
 def advection_diffusion(out):
     """Illustrate the profile and mass mismatch caused by an omitted sink."""
     x = np.linspace(0, 1, 800, endpoint=False)
-    final_time, mu = 0.6, 1.2
+    # Panel (a) shows the largest severity of the grid, s = mu T = 1.
+    final_time, s_shown = 0.6, ADV_SEVERITIES[-1]
     initial, imposed_final = advdiff(x, np.array([0.0, final_time]))
-    true_final = np.exp(-mu * final_time) * imposed_final
+    true_final = np.exp(-s_shown) * imposed_final
     fig, (a, b) = plt.subplots(1, 2, figsize=rf.figure_size(0.94, 2.6))
 
     # Same styles as the oscillator figure: generating solid blue, imposed dashed vermilion.
-    a.plot(x, true_final, color=C1, label=rf"generating, $\mu={mu:g}$")
+    a.plot(x, true_final, color=C1, label="generating")
     a.plot(x, imposed_final, color=C2, ls="--", label=r"imposed, $\mu=0$")
     a.plot(x, initial, color=MUTED, ls=":", label=r"initial profile, $t=0$")
     a.set_xlabel(r"$x$")
     a.set_ylabel(r"$u(x,t)$")
-    a.set_title(rf"(a) profiles at $t={final_time:g}$", loc="left")
+    a.set_title(rf"(a) profiles at $t={final_time:g}$, $s={s_shown:g}$", loc="left")
     a.set_xlim(0, 1)
     a.set_ylim(0, 1.05)
     grid(a)
 
+    # Severity moves the generating mass and leaves the imposed one fixed, so every
+    # severity of the grid gets its own generating curve, labelled at the right.
     tg = np.linspace(0, final_time, 400)
-    b.plot(tg, np.exp(-mu * tg), color=C1)
+    for s in ADV_SEVERITIES:
+        b.plot(tg, np.exp(-s * tg / final_time), color=C1)
+        b.text(
+            final_time * 1.02,
+            np.exp(-s),
+            f"${s:g}$",
+            va="center",
+            ha="left",
+            fontsize=7.5,
+            color=INK,
+            clip_on=False,
+        )
+    b.text(final_time * 1.02, 1.0, "$0$", va="center", ha="left", fontsize=7.5, color=INK)
+    b.text(
+        final_time * 1.02,
+        1.1,
+        "$s$",
+        va="center",
+        ha="left",
+        fontsize=7.5,
+        color=INK,
+        clip_on=False,
+    )
     b.plot(tg, np.ones_like(tg), color=C2, ls="--")
     b.set_xlabel(r"$t$")
     b.set_ylabel(r"$M(t)/M_0$")
-    b.set_title("(b) mass mismatch", loc="left")
+    b.set_title("(b) mass at each severity", loc="left")
     b.set_xlim(0, final_time)
     b.set_ylim(0, 1.05)
     grid(b)

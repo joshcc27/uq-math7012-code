@@ -20,7 +20,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib.patches import Patch
 
 from pinn_misspec.paths import ADVECTION_DIFFUSION, OSCILLATOR
 
@@ -201,9 +200,9 @@ MOST_WEIGHT_LABELS = 4
 def plot_coefficient_panels(frame, references, coefficient, symbol, path, unreliable=()):
     """Plot one coefficient's error against the weight, one panel per severity.
 
-    Runs are faint dots, the median over all runs a line, and the band spans the
-    network seeds' medians. Runs beyond the axis are drawn as triangles at the
-    edge. ``references`` maps each severity to its mean target errors in
+    Runs are faint dots and the median over all runs a line. Runs beyond the
+    axis are drawn as triangles at the edge. ``references`` maps each severity
+    to its mean target errors in
     percent; segments into ``unreliable`` weights are dotted. The legend takes the
     first empty panel slot, or sits below the panels when there is none.
     """
@@ -234,25 +233,27 @@ def plot_coefficient_panels(frame, references, coefficient, symbol, path, unreli
             ax.axhline(ref["residual"], color=RESIDUAL_END, lw=1.4, ls="--", zorder=2)
             ax.axhline(ref["solution"], color=SOLUTION_END, lw=1.4, ls="-.", zorder=2)
             # Medians use every run, as the thesis tables do.
-            by_network = (
-                everything.groupby(["scaled_physics_weight", "network_seed"])[f"{c}_total"]
-                .median()
-                .unstack()
-                * 100
-            ).reindex(weights)
             median = (
                 100 * everything.groupby("scaled_physics_weight")[f"{c}_total"].median()
             ).reindex(weights)
-            # The axis spans the truth, both targets and every run, capped at the
-            # off-range bounds so that distant runs, drawn as edge triangles, cannot
-            # flatten the panel. The medians always stay in view.
+            # The axis spans the truth, both targets, the medians and every run on the
+            # range, so that distant runs cannot flatten the panel. Runs beyond it are
+            # drawn as triangles in a strip added at that edge.
             errors = 100 * everything[f"{c}_total"]
-            anchors = np.concatenate([[0.0, ref["residual"], ref["solution"]], errors.to_numpy()])
-            low = max(np.nanmin(anchors), 100 * everything[f"{c}_range_low"].min())
-            high = min(np.nanmax(anchors), 100 * everything[f"{c}_range_high"].max())
-            low, high = min(low, median.min()), max(high, median.max())
+            on_range = ~everything[f"{c}_off_range"].to_numpy(dtype=bool)
+            anchors = np.concatenate(
+                [
+                    [0.0, ref["residual"], ref["solution"]],
+                    errors.to_numpy()[on_range],
+                    median.to_numpy(),
+                ]
+            )
+            low, high = np.nanmin(anchors), np.nanmax(anchors)
             pad = 0.08 * (high - low)
+            strip = 0.2 * (high - low)
             low, high = low - pad, high + pad
+            below, above = bool((errors < low).any()), bool((errors > high).any())
+            low, high = low - (strip if below else 0.0), high + (strip if above else 0.0)
             ax.set_ylim(low, high)
             cell = everything[(errors >= low) & (errors <= high)]
             outside = everything[(errors < low) | (errors > high)]
@@ -262,15 +263,6 @@ def plot_coefficient_panels(frame, references, coefficient, symbol, path, unreli
                 s=7,
                 color=PINN,
                 alpha=0.22,
-                lw=0,
-                zorder=3,
-            )
-            ax.fill_between(
-                weights,
-                by_network.min(axis=1),
-                by_network.max(axis=1),
-                color=PINN,
-                alpha=0.18,
                 lw=0,
                 zorder=3,
             )
@@ -287,11 +279,14 @@ def plot_coefficient_panels(frame, references, coefficient, symbol, path, unreli
                     zorder=5,
                     clip_on=False,
                 )
+                # The note sits in the strip, at the edge where most runs left the axis.
+                at_bottom = (outside[f"{c}_total"] < 0).sum() >= len(outside) / 2
                 ax.text(
                     0.02,
-                    0.03,
+                    0.02 if at_bottom else 0.98,
                     f"{len(outside)} off axis",
                     transform=ax.transAxes,
+                    va="bottom" if at_bottom else "top",
                     fontsize=8.5,
                     color=MUTED,
                 )
@@ -314,7 +309,6 @@ def plot_coefficient_panels(frame, references, coefficient, symbol, path, unreli
         wrap = "\n" if spare else " "
         handles = [
             plt.Line2D([], [], color=PINN, marker="o", ms=3.5, lw=1.5, label="PINN median"),
-            Patch(facecolor=PINN, alpha=0.18, edgecolor="none", label=f"network-seed{wrap}medians"),
             plt.Line2D(
                 [],
                 [],

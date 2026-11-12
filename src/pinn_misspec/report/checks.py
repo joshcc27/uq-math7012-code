@@ -99,7 +99,9 @@ def plot_relaxed(spec, summary, path):
         def tag(weight):
             # Name the budget only where it differs from the standard one.
             steps = int(summary[summary.scaled_physics_weight == weight].physics_steps.iloc[0])
-            budget = "" if steps == spec["standard_steps"] else f", {steps} updates"
+            # Thousands are grouped with a thin space, as in the text.
+            count = f"{steps:,}".replace(",", r"\,")
+            budget = "" if steps == spec["standard_steps"] else f", ${count}$ updates"
             return rf"$\Lambda = {weight:g}${budget}"
 
         for index, (ax, (name, _, symbol)) in enumerate(zip(axes[0], coefficients)):
@@ -136,7 +138,16 @@ def plot_relaxed(spec, summary, path):
             ax = axes[0, -1]
             ax.set_title(f"({letters[panels - 1]}) sink", loc="left")
             severities = np.sort(summary.severity.unique())
-            ax.plot(severities, severities, color=rf.MUTED, lw=0.9, ls=(0, (1, 2)), label="truth")
+            # Drawn over the fitted lines, which lie on it when the sink is recovered.
+            ax.plot(
+                severities,
+                severities,
+                color=rf.MUTED,
+                lw=1.0,
+                ls=(0, (1, 2)),
+                zorder=5,
+                label="truth",
+            )
             for (colour, marker), weight in zip(WEIGHT_STYLES, weights):
                 part = summary[summary.scaled_physics_weight == weight].sort_values("severity")
                 ax.plot(
