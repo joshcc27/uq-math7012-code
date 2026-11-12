@@ -6,6 +6,7 @@
     uv run python -m pinn_misspec.report checks        # the budget-check counts
     uv run python -m pinn_misspec.report screens       # the control screens
     uv run python -m pinn_misspec.report figures       # the thesis figures
+    uv run python -m pinn_misspec.report network-figures  # the two that need saved networks
     uv run python -m pinn_misspec.report diagnostic collocation-nested-2026-10-11
     uv run python -m pinn_misspec.report diagnostic --list
 
@@ -20,7 +21,7 @@ from pathlib import Path
 
 from pinn_misspec.paths import THESIS_FIGURES
 
-from . import checks, diagnostics, frame, illustrations, tables
+from . import checks, diagnostics, frame, illustrations, networks, tables
 
 
 def main(argv=None):
@@ -34,6 +35,8 @@ def main(argv=None):
         commands.add_parser(name)
     figures = commands.add_parser("figures")
     figures.add_argument("--out", type=Path, default=THESIS_FIGURES)
+    network_figures = commands.add_parser("network-figures")
+    network_figures.add_argument("--out", type=Path, default=THESIS_FIGURES)
     diagnostic = commands.add_parser("diagnostic")
     diagnostic.add_argument("name", nargs="?", choices=sorted(diagnostics.DIAGNOSTICS))
     diagnostic.add_argument("--list", action="store_true", help="list the diagnostics")
@@ -65,6 +68,9 @@ def main(argv=None):
         written += frame.coefficient_figures(arguments.out)
         written += checks.relaxed_figures(arguments.out)
         written += diagnostics.position_figure(arguments.out)
+        print(f"wrote {len(written)} figures to {arguments.out}: {', '.join(written)}")
+    elif arguments.command == "network-figures":
+        written = networks.network_figures(arguments.out)
         print(f"wrote {len(written)} figures to {arguments.out}: {', '.join(written)}")
     elif arguments.list or arguments.name is None:
         for name, (_, function) in sorted(diagnostics.DIAGNOSTICS.items()):

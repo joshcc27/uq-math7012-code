@@ -44,6 +44,7 @@ uv run python -m pinn_misspec.report intervals   # cluster-bootstrap intervals (
 uv run python -m pinn_misspec.report checks      # budget-check counts
 uv run python -m pinn_misspec.report screens     # control screens
 uv run python -m pinn_misspec.report figures     # the nine figures, to results/thesis_figures/
+uv run python -m pinn_misspec.report network-figures  # the two drawn from saved networks (below)
 uv run python -m pinn_misspec.report diagnostic <name>
 ```
 
@@ -53,6 +54,7 @@ uv run python -m pinn_misspec.report diagnostic <name>
 | Figures 6.1, B.2 | `figures` | `osc-w0-vs-weight.pdf`, `advdiff-diffusivity-vs-weight.pdf` |
 | Figures B.1, 6.2 | `figures` | `osc-relaxed.pdf`, `advdiff-relaxed.pdf` |
 | Figure 6.3 | `figures` | `position-both-models.pdf` |
+| Figures 6.2, 6.5 | `network-figures` | `osc-neural-state.pdf`, `advdiff-residual-field.pdf`; these need the networks saved by `dense-grid-2026-10-25` and `data-residual-structure-2026-10-25`, which the results archive does not include |
 | Tables 5.2, 5.3 | — | the constants of `oscillator/` and `advection_diffusion/` (`model.py`, `study.py`) |
 | Table 6.1 | `tables` | oscillator median frequency error by weight; its target columns from oscillator references by severity |
 | Section 6.2, the oscillator's positions | `tables` | oscillator median position, all runs |
